@@ -24,6 +24,22 @@ TreeItem::TreeItem(const TreeItem& other)
 {}
 
 
+void TreeItem::removeItem()
+{
+    if (deleted == false)
+    {
+        deleted = true;
+        data = data + " (deleted)";
+        for (TreeItem* childrenItem : children)
+        {
+            childrenItem->removeItem();
+        }
+    }
+}
+
+
+
+
 QString TreeItem::TreeItem::getData() const
 {
     return data;

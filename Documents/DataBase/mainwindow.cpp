@@ -24,7 +24,6 @@ TreeItem* findItemByIdInVector(const QVector<TreeItem*>& items, int id)
 
 void start(MainWindow &mainWindow)
 {
-
     mainWindow.database = new Database;
     mainWindow.cache = new Cache;
 
@@ -86,6 +85,14 @@ MainWindow::MainWindow(QWidget *parent)
     connect(ui->cacheDeleteButton, &QPushButton::clicked, this, &MainWindow::onCacheDeleteButtonClicked);
     connect(ui->applyAllChangesButton, &QPushButton::clicked, this, &MainWindow::onApplyAllChangesButtonClicked);
     connect(ui->refreshButton, &QPushButton::clicked, this, &MainWindow::onRefreshButtonClicked);
+
+    //блок двойного клика для редактирования
+    connect(ui->treeView, &QTreeView::doubleClicked, [&]() {
+        ui->treeView->setEditTriggers(QAbstractItemView::NoEditTriggers);
+    });
+    connect(ui->cacheTreeView, &QTreeView::doubleClicked, [&]() {
+        ui->cacheTreeView->setEditTriggers(QAbstractItemView::NoEditTriggers);
+    });
 }
 
 MainWindow::~MainWindow()
@@ -121,7 +128,8 @@ void MainWindow::onCacheTreeViewClicked(const QModelIndex& index)
 //Добавление элемента из БД в КЭШ с настройкой иерархии
 void MainWindow::onCacheAddButtonClicked()
 {
-    if (currentSelectedItem)
+    //если элемент выбран и не удален в базе данных можем его добавить
+    if (currentSelectedItem && database->getTreeItemFromQStandardItem(currentSelectedItem)->isDeleted() == false)
     {
         //да можно вынести в отдельный метод, но я почему-то решил оставить это здесь
         // Проверяем, есть ли элемент с таким же id в cache
@@ -179,7 +187,9 @@ void MainWindow::onCacheAddButtonClicked()
 //Добавление нового элемента в КЭШ
 void MainWindow::onAddButtonClicked()
 {
-    if (currentSelectedCacheItem != nullptr) {
+    //если элемент выбран и не удален в КЭШ можем к нему добавить новый
+    if (currentSelectedCacheItem != nullptr && cache->getTreeItemFromQStandardItem(currentSelectedCacheItem)->isDeleted() == false)
+    {
         QString name = QInputDialog::getText(this, tr("Add Item"), tr("Enter item name:"));
         if (!name.isEmpty()) {
             TreeItem* newItem = new TreeItem(name);
@@ -195,6 +205,7 @@ void MainWindow::onAddButtonClicked()
             //parentItem->addChild(newItem);
             addAllItemsFromArrayToTreeView(modelCache, cache->getAllItems());
         }
+        currentSelectedCacheItem = nullptr;
     }
 }
 
@@ -202,14 +213,17 @@ void MainWindow::onAddButtonClicked()
 //Изменение поля data для элемента в КЭШ
 void MainWindow::onCacheUpdateButtonClicked()
 {
-    if (currentSelectedCacheItem != nullptr)
+    if (currentSelectedCacheItem != nullptr && cache->getTreeItemFromQStandardItem(currentSelectedCacheItem)->isDeleted() == false)
     {
         QString name = QInputDialog::getText(this, tr("Add Item"), tr("Enter item name:"));
         if (!name.isEmpty())
         {
             cache->getTreeItemFromQStandardItem(currentSelectedCacheItem)->setData(name);
+            cache->getTreeItemFromQStandardItem(currentSelectedCacheItem)->setModified(true);
         }
         addAllItemsFromArrayToTreeView(modelCache, cache->getAllItems());
+
+        currentSelectedCacheItem = nullptr;
     }
 }
 
@@ -231,11 +245,14 @@ void MainWindow::onRefreshButtonClicked()
 //Удаление элемента в КЭШ, не удаляем а ставим метку "удален"
 void MainWindow::onCacheDeleteButtonClicked()
 {
-    if (currentSelectedCacheItem)
+    if (currentSelectedCacheItem && cache->getTreeItemFromQStandardItem(currentSelectedCacheItem)->isDeleted() == false)
     {
-        cache->getTreeItemFromQStandardItem(currentSelectedCacheItem)->setDeleted(true);
+        TreeItem* deleteItem = cache->getTreeItemFromQStandardItem(currentSelectedCacheItem);
+        deleteItem->removeItem();
+
         addAllItemsFromArrayToTreeView(modelCache, cache->getAllItems());
     }
+    currentSelectedCacheItem = nullptr;
 }
 
 
@@ -263,13 +280,30 @@ void MainWindow::onApplyAllChangesButtonClicked()
         else
         {
             //Если элемент есть в базе данных, то проверим удален он или нет и поменяем date
-            //тут конечно можно проверять изменилась data или нет
-            database->getItemById(ItemCache->getId())->setDeleted(ItemCache->isDeleted());
-            database->getItemById(ItemCache->getId())->setData(ItemCache->getData());
+            TreeItem* dataBaseItem = database->getItemById(ItemCache->getId());
+
+            //если элемент удален в КЭШ
+            if (ItemCache->isDeleted() == true)
+            {
+                dataBaseItem->removeItem();
+            }
+
+            //Если элемент изменил имя в КЭШ
+            if (ItemCache->isModified() == true)
+            {
+                dataBaseItem->setData(ItemCache->getData());
+            }
         }
+
+        //обновление дерева БД
+        addAllItemsFromArrayToTreeView(model, database->getAllItems());
+
+        //очищаем КЭШ
+        cache->clear();
+        modelCache->clear();
+        currentSelectedCacheItem = nullptr;
+        currentSelectedItem = nullptr;
     }
-    //обновление дерева БД
-    addAllItemsFromArrayToTreeView(model, database->getAllItems());
 }
 
 
@@ -286,9 +320,7 @@ void MainWindow::addAllItemsToTreeView(TreeItem* currentItem, QStandardItem* par
     // Рекурсивно добавляем дочерние элементы текущего элемента TreeItem
     for (TreeItem* child : currentItem->getChildren())
     {
-        if (!child->isDeleted()) {
-            addAllItemsToTreeView(child, item);
-        }
+        addAllItemsToTreeView(child, item);
     }
 }
 
@@ -304,8 +336,8 @@ void MainWindow::addAllItemsFromArrayToTreeView(QStandardItemModel* model, QVect
     int flag = 0;
     for (TreeItem* item : allItems)
     {
-        if (!item->isDeleted())
-        {
+        //if (!item->isDeleted())
+        //{
             for (TreeItem* item_parent : allItems)
             {
                 if (item->getParent() != nullptr)
@@ -324,14 +356,10 @@ void MainWindow::addAllItemsFromArrayToTreeView(QStandardItemModel* model, QVect
                 // Добавляем все дочерние элементы из cache в cacheTreeView
                 for (TreeItem* child : item->getChildren())
                 {
-                    if (!child->isDeleted())
-                    {
-                        addAllItemsToTreeView(child, rootItem);
-                    }
+                    addAllItemsToTreeView(child, rootItem);
                 }
                 model->appendRow(rootItem);
             }
-        }
         flag = 0;
     }
 }

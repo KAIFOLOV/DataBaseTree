@@ -23,6 +23,9 @@ public:
     TreeItem(const QString& data, TreeItem* parent = nullptr); // Конструктор с параметрами
     TreeItem(const TreeItem& other); //конструктор копирования, но без связей
 
+    void removeItem();
+
+
     QString getData() const;
     TreeItem* getParent() const;
     QVector<TreeItem*> getChildren() const;

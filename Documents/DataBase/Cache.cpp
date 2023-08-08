@@ -15,6 +15,7 @@ void Cache::addItem(TreeItem* item)
     cacheItems.push_back(item);
 }
 
+
 TreeItem* Cache::findItemById(int id) const
 {
     for (TreeItem* item : cacheItems)
