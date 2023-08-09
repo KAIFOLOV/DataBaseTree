@@ -44,6 +44,7 @@ void Cache::setAddItemId(int id) {
 
 void Cache::clear() {
     cacheItems.clear();
+    addItemsId.clear();
 }
 
 TreeItem* Cache::getTreeItemFromQStandardItem(QStandardItem* item)

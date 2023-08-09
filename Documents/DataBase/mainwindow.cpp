@@ -298,15 +298,18 @@ void MainWindow::onApplyAllChangesButtonClicked()
                 dataBaseItem->setData(ItemCache->getData());
             }
         }
-
         //обновление дерева БД
         addAllItemsFromArrayToTreeView(model, database->getAllItems());
+    }
 
-        //очищаем КЭШ
-        cache->clear();
-        modelCache->clear();
-        currentSelectedCacheItem = nullptr;
-        currentSelectedItem = nullptr;
+    cache->clear();
+    modelCache->clear();
+    currentSelectedCacheItem = nullptr;
+    currentSelectedItem = nullptr;
+
+    for (TreeItem* Item : database->getAllItems())
+    {
+        Item->setModified(false);
     }
 }
 
@@ -340,30 +343,28 @@ void MainWindow::addAllItemsFromArrayToTreeView(QStandardItemModel* model, QVect
     int flag = 0;
     for (TreeItem* item : allItems)
     {
-        //if (!item->isDeleted())
-        //{
-            for (TreeItem* item_parent : allItems)
+        for (TreeItem* item_parent : allItems)
+        {
+            if (item->getParent() != nullptr)
             {
-                if (item->getParent() != nullptr)
+                if (item->getParent()->getId() == item_parent->getId())
                 {
-                    if (item->getParent()->getId() == item_parent->getId())
-                    {
-                        flag = 1;
-                    }
+                    flag = 1;
                 }
             }
-            if (flag == 0)
-            {
-                QStandardItem* rootItem = new QStandardItem(item->getData());
-                rootItem->setData(item->getId(), Qt::UserRole);
+        }
+        if (flag == 0)
+        {
+            QStandardItem* rootItem = new QStandardItem(item->getData());
+            rootItem->setData(item->getId(), Qt::UserRole);
 
-                // Добавляем все дочерние элементы из cache в cacheTreeView
-                for (TreeItem* child : item->getChildren())
-                {
-                    addAllItemsToTreeView(child, rootItem);
-                }
-                model->appendRow(rootItem);
+            // Добавляем все дочерние элементы из cache в cacheTreeView
+            for (TreeItem* child : item->getChildren())
+            {
+                addAllItemsToTreeView(child, rootItem);
             }
+            model->appendRow(rootItem);
+        }
         flag = 0;
     }
 }
