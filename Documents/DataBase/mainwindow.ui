@@ -27,10 +27,10 @@
    <widget class="QPushButton" name="addButton">
     <property name="geometry">
      <rect>
-      <x>360</x>
+      <x>340</x>
       <y>260</y>
-      <width>191</width>
-      <height>41</height>
+      <width>221</width>
+      <height>51</height>
      </rect>
     </property>
     <property name="text">
@@ -40,10 +40,10 @@
    <widget class="QPushButton" name="cacheAddButton">
     <property name="geometry">
      <rect>
-      <x>60</x>
+      <x>40</x>
       <y>260</y>
-      <width>181</width>
-      <height>41</height>
+      <width>201</width>
+      <height>51</height>
      </rect>
     </property>
     <property name="text">
@@ -95,10 +95,10 @@
    <widget class="QPushButton" name="cacheUpdateButton">
     <property name="geometry">
      <rect>
-      <x>360</x>
+      <x>340</x>
       <y>320</y>
-      <width>191</width>
-      <height>41</height>
+      <width>221</width>
+      <height>51</height>
      </rect>
     </property>
     <property name="text">
@@ -108,10 +108,10 @@
    <widget class="QPushButton" name="cacheDeleteButton">
     <property name="geometry">
      <rect>
-      <x>360</x>
+      <x>340</x>
       <y>380</y>
-      <width>191</width>
-      <height>41</height>
+      <width>221</width>
+      <height>51</height>
      </rect>
     </property>
     <property name="text">
@@ -121,10 +121,10 @@
    <widget class="QPushButton" name="applyAllChangesButton">
     <property name="geometry">
      <rect>
-      <x>60</x>
+      <x>40</x>
       <y>320</y>
-      <width>181</width>
-      <height>41</height>
+      <width>201</width>
+      <height>51</height>
      </rect>
     </property>
     <property name="text">
@@ -134,10 +134,10 @@
    <widget class="QPushButton" name="refreshButton">
     <property name="geometry">
      <rect>
-      <x>60</x>
+      <x>40</x>
       <y>380</y>
-      <width>181</width>
-      <height>41</height>
+      <width>201</width>
+      <height>51</height>
      </rect>
     </property>
     <property name="text">
