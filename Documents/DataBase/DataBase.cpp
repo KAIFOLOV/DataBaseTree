@@ -13,7 +13,10 @@ Database::~Database() {
 
 void Database::addItem(TreeItem* item)
 {
-    if (item) items.push_back(item);
+    if (item)
+    {
+        items.push_back(item);
+    }
 }
 
 void Database::clear() {
@@ -23,10 +26,14 @@ void Database::clear() {
 
 TreeItem* Database::getItemById(int id)
 {
-    foreach (TreeItem* item, items) {
-        //проходим по всем элементам и ищем нужный по id
-        if (item->getId() == id) return item;
+    for (TreeItem* item : items)
+    {
+        if (item->getId() == id)
+        {
+            return item;
+        }
     }
+    return nullptr;
 }
 
 

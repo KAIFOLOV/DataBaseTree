@@ -3,7 +3,6 @@
 
 static int idCounter = 0;
 
-
 TreeItem::TreeItem() : data(""), parent(nullptr), deleted(false), modified(false)
 {
     id = idCounter++;

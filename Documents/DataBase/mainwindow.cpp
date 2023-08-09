@@ -202,7 +202,12 @@ void MainWindow::onAddButtonClicked()
             // Устанавливаем, что добавленный элемент изменен
             newItem->setModified(true);
 
-            //parentItem->addChild(newItem);
+
+            if (newItem->getParent() == nullptr) {
+                 std::cout << "Error" << std::endl;
+            }
+
+            //обновляем дерево
             addAllItemsFromArrayToTreeView(modelCache, cache->getAllItems());
         }
         currentSelectedCacheItem = nullptr;
@@ -267,7 +272,6 @@ void MainWindow::onApplyAllChangesButtonClicked()
             TreeItem* parent = ItemCache->getParent();
             // Добавляем текущий элемент
             database->addItem(ItemCache);
-
             for (int cacheId : cache->getAddItemsId())
             {
                 //Смотрим был ли родитель нового элемента добавлен в КЭШ
